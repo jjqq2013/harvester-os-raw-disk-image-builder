@@ -1,0 +1,27 @@
+scheme_version: 1
+token: token # Replace with a desired token
+os:
+  hostname: node0 # Set a hostname. This can be omitted if DHCP server offers hostnames
+  password: password     # The user name is "rancher"
+install:
+  mode: create
+  management_interface:
+    interfaces:
+      - hwAddr: 52:54:00:ec:0e:0b
+    default_route: true
+    method: dhcp
+  # The target disk to install. i.e., the loopback device of the raw disk harvester<version>.dd.
+  device: /dev/vda
+  # The harvester-installer does not install GRUB for both legacy and UEFI boot mode.
+  # It is for harvester1.5.0_step1_prepare_dual_boot_image.sh. Comparing with inserting EFI partition later,
+  # it is easier to install GRUB EFI stuff here and then let harvester1.5.0_step1_prepare_dual_boot_image.sh split the
+  # EFI partition into a 1MB bios_grub partition and the rest EFI partition.
+  force_efi: true
+  # Still need the installation iso, which contains essential stuff such as Rancher and some container images.
+  iso_url: http://10.0.2.2:10080/iso
+  tty: ttyS0
+  poweroff: true        # Otherwise, the machine will restart and start installation again
+  debug: true
+
+  vip_mode: dhcp        # Or dhcp, check configuration file for more information
+  vip_hw_addr: 52:54:00:ec:0e:0b   # Leave empty when vip_mode is static
