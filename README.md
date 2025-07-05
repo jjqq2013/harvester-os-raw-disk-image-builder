@@ -14,16 +14,9 @@ curl -fksSL https://releases.rancher.com/harvester/v1.5.0/harvester-v1.5.0-amd64
 git clone https://github.com/jjqq2013/harvester-os-raw-disk-image-builder.git ./bin
 ```
 
-- To reproduce the issue, switch to the `reproduce-failure` branch.
-```
-(cd ./bin && git checkout reproduce-failure)
-```
-
 - Run following command to install Harvester OS to `./harvester1.5.0.dd` (raw disk image).
 ```
 sudo ./bin/harvester1.5.0_step0_prepare_uefi_only_boot_image.sh
 ```
 
-To abort the above program, you can press CTRL+C. 
-
-You will find that the installation seemingly hangs forever, more specifically, one of the `ctr-check-images.sh` runs endlessly.
+To abort the above program, you can press CTRL+C.

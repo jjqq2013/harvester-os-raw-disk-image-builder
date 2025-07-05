@@ -18,7 +18,8 @@ install:
   # EFI partition into a 1MB bios_grub partition and the rest EFI partition.
   force_efi: true
   # Still need the installation iso, which contains essential stuff such as Rancher and some container images.
-  iso_url: http://10.0.2.2:10080/iso
+#  iso_url: http://10.0.2.2:10080/iso
+  iso_url: /dev/vdb
   tty: ttyS0
   poweroff: true        # Otherwise, the machine will restart and start installation again
   debug: true
