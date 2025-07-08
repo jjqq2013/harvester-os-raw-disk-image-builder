@@ -65,12 +65,15 @@ LIVEOS_KERNEL_OPTS="ip=dhcp net.ifnames=1 rd.cos.disable rd.noverifyssl console=
   root=live:http://10.0.2.2:10080/rootfs.squashfs \
   harvester.install.config_url=http://10.0.2.2:10080/harvester_install_config.yml \
   harvester.install.automatic=true harvester.install.skipchecks=true \
-  "
+  cos.setup=http://10.0.2.2:10080/liveos_cloud_config_for_fixing_harv_install.yml"
 
 # Start the liveos, which automatically install os to target disk ($RES_IMAGE).
 # - The liveos user/password is rancher/rancher.
 # - The liveos can be accessed via ``ssh rancher@localhost -p 10080``.
 # - The installation log is in /var/log/console.log.
+# - The essential installation logic is the ``harv-install`` which is modified for performance and bug fixes locally.
+#   See cookbooks/infra-image-builder/files/tools_for_os_images/harvester1.5.0/harv-install.
+#   The modification is achieved by boot args cos.setup=http://10.0.2.2:10080/liveos_cloud_config_for_fixing_harv_install.yml.
 # - The installation starts from /system/oem/91_installer.yaml (https://github.com/harvester/harvester-installer/blob/v1.5.0/package/harvester-os/files/system/oem/91_installer.yaml#L5-L5),
 #   then setup-installer.sh calls doInstall (https://github.com/harvester/harvester-installer/blob/v1.5.0/pkg/console/util.go#L509-L509),
 #   the doInstall does some simple preparation then call ``harv-install`` (https://github.com/harvester/harvester-installer/blob/v1.5.0/pkg/console/util.go#L587).
@@ -79,6 +82,10 @@ LIVEOS_KERNEL_OPTS="ip=dhcp net.ifnames=1 rd.cos.disable rd.noverifyssl console=
 #
 # Details about the kvm parameters:
 # - The ``-drive if=virtio,format=raw,...`` will become /dev/vda in the guest os. The v means virtio.
+# - The ``second -drive if=virtio,format=raw,...`` will become /dev/vdb in the guest os. It is the ISO image.
+#   It is not for boot, but for speeding up the harvester installer which takes too long to download the ISO image from
+#   harvester.install.iso_url such as http://host/x.iso.
+#   Adding this ISO as a disk makes it possible to specify the iso_url=/dev/vdb, and the customized harvester
 #   installer can directly mount it without downloading.
 # - The ``-vnc :0`` means listen at port 5900+0. To view tty1, vnc is needed.
 #   The ``password=on`` is needed for at least MacOS's VNC client which requires non-empty vnc password.
@@ -101,6 +108,7 @@ kvm -m 4G -cpu host -smp 2 -bios /usr/share/qemu/OVMF.fd \
   -serial stdio -vnc :0,password=on \
   -monitor telnet:127.0.0.1:10180,server,nowait \
   -drive if=virtio,format=raw,media=disk,file="$RES_IMAGE" \
+  -drive if=virtio,format=raw,media=cdrom,file="$ORIG_ISO_IMAGE_CACHE_PATH" \
   -kernel "$RES_IMAGE".tmp/kernel -initrd "$RES_IMAGE".tmp/initrd -append "$LIVEOS_KERNEL_OPTS" \
   -device virtio-net,netdev=mgmtNic,mac=52:54:00:ec:0e:0b -netdev user,id=mgmtNic,net=10.0.2.0/24,host=10.0.2.2,hostfwd=tcp::10022-:22 \
   -device virtio-net,netdev=userNic,mac=6e:87:e4:d9:e2:01 -netdev user,id=userNic,net=10.0.3.0/24,host=10.0.3.2

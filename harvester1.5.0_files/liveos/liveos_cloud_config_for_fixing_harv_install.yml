@@ -1,0 +1,10 @@
+name: "Fix harvester installer"
+stages:
+  # This stage runs before initramfs stage which is used by the harvester installer config in /system/oem/91_installer.yaml.
+  # See https://github.com/harvester/harvester-installer/blob/v1.5.0/package/harvester-os/files/system/oem/91_installer.yaml
+  rootfs:
+    - name: "Fix harvester installer"
+      commands:
+        # The 10.0.2.2 is the physical host from vm side view
+        - bash -x -c 'curl -sS http://10.0.2.2:10080/harv-install -o /sysroot/usr/sbin/harv-install'
+        - bash -x -c 'curl -sS http://10.0.2.2:10080/ctr-check-images.sh -o /sysroot/usr/sbin/ctr-check-images.sh'
