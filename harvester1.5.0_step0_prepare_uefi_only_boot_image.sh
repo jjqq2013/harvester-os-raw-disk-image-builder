@@ -45,7 +45,13 @@ ln -sfv "$ORIG_ISO_IMAGE_CACHE_PATH" "$RES_IMAGE".tmp/iso
 
 # The kernel, initrd, rootfs.squashfs  in the ISO are same as respective separate files in the
 # official Harvester download page.
-ln -sfv "$RES_IMAGE".tmp/iso.mount/{boot/kernel,boot/initrd,rootfs.squashfs} "$RES_IMAGE".tmp/
+ln -sfv "$RES_IMAGE".tmp/iso.mount/{boot/kernel,boot/initrd} "$RES_IMAGE".tmp/
+
+mkdir -p "$RES_IMAGE".tmp/rootfs.squashfs.unzipped
+unsquashfs -d "$RES_IMAGE".tmp/rootfs.squashfs.unzipped "$RES_IMAGE".tmp/iso.mount/rootfs.squashfs
+sed --in-place -E '/^set console_params=/d' "$RES_IMAGE".tmp/rootfs.squashfs.unzipped/etc/cos/bootargs.cfg
+mksquashfs "$RES_IMAGE".tmp/rootfs.squashfs.unzipped "$RES_IMAGE".tmp/rootfs.squashfs -xattrs -comp xz -noappend
+rm -fr "$RES_IMAGE".tmp/rootfs.squashfs.unzipped
 
 rsync -av "$PROG_DIR"/${IMAGE_NAME}_files/liveos/. "$RES_IMAGE".tmp/
 
